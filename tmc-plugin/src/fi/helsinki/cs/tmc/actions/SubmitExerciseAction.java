@@ -1,8 +1,23 @@
 package fi.helsinki.cs.tmc.actions;
 
-import fi.helsinki.cs.tmc.exerciseSubmitter.ExerciseSubmitter;
+import com.google.common.util.concurrent.FutureCallback;
+import com.google.common.util.concurrent.Futures;
+import com.google.common.util.concurrent.ListenableFuture;
+
 import fi.helsinki.cs.tmc.model.CourseDb;
+import fi.helsinki.cs.tmc.model.NBTmcSettings;
 import fi.helsinki.cs.tmc.model.ProjectMediator;
+import fi.helsinki.cs.tmc.model.TmcCoreSingleton;
+import fi.helsinki.cs.tmc.model.TmcProjectInfo;
+import fi.helsinki.cs.tmc.ui.ConvenientDialogDisplayer;
+import fi.helsinki.cs.tmc.ui.SubmissionResultWaitingDialog;
+import hy.tmc.core.TmcCore;
+import hy.tmc.core.domain.Exercise;
+import hy.tmc.core.domain.submission.SubmissionResult;
+import hy.tmc.core.exceptions.ExpiredException;
+import hy.tmc.core.exceptions.TmcCoreException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.api.project.Project;
 import org.openide.nodes.Node;
 import org.openide.util.NbBundle.Messages;
@@ -14,10 +29,16 @@ public final class SubmitExerciseAction extends AbstractExerciseSensitiveAction 
 
     private CourseDb courseDb;
     private ProjectMediator projectMediator;
+    private final TmcCore core;
+    private NBTmcSettings settings;
+    private ConvenientDialogDisplayer dialogs;
 
     public SubmitExerciseAction() {
         this.courseDb = CourseDb.getInstance();
         this.projectMediator = ProjectMediator.getInstance();
+        this.core = TmcCoreSingleton.getInstance();
+        this.settings = NBTmcSettings.getDefault();
+        this.dialogs = ConvenientDialogDisplayer.getDefault();
 
         putValue("noIconInMenu", Boolean.TRUE);
     }
@@ -34,7 +55,28 @@ public final class SubmitExerciseAction extends AbstractExerciseSensitiveAction 
 
     @Override
     protected void performAction(Node[] nodes) {
-        new ExerciseSubmitter().performAction(projectsFromNodes(nodes).toArray(new Project[0]));
+
+        projectMediator.saveAllFiles();
+
+        Project[] projects = projectsFromNodes(nodes).toArray(new Project[0]);
+        for (Project project : projects) {
+
+            submitProject(project);
+        }
+    }
+
+    private void submitProject(Project project) {
+        TmcProjectInfo info = projectMediator.wrapProject(project);
+        Exercise exercise = projectMediator.tryGetExerciseForProject(info, courseDb);
+        final SubmissionResultWaitingDialog dialog = SubmissionResultWaitingDialog.createAndShow();
+        try {
+            ListenableFuture<SubmissionResult> r;
+            r = core.submit(info.getProjectDirAbsPath(), settings);
+            Futures.addCallback(r, new SubmissionCallback(exercise, dialog));
+        } catch (TmcCoreException ex) {
+            String message = "There was an error submitting project " + info.getProjectName();
+            dialogs.displayError(message, ex);
+        }
     }
 
     @Override
@@ -47,5 +89,41 @@ public final class SubmitExerciseAction extends AbstractExerciseSensitiveAction 
         // The setting in layer.xml doesn't work with NodeAction
         return "fi/helsinki/cs/tmc/actions/submit.png";
     }
-    
+
+    private class SubmissionCallback implements FutureCallback<SubmissionResult> {
+
+        private Exercise exercise;
+        private SubmissionResultWaitingDialog dialog;
+
+        private SubmissionCallback(Exercise exercise, SubmissionResultWaitingDialog dialog) {
+            SubmissionCallback.this.exercise = exercise;
+            SubmissionCallback.this.dialog = dialog;
+        }
+
+        @Override
+        public void onSuccess(SubmissionResult result) {
+            dialog.close();
+
+            exercise.setAttempted(true);
+
+            if (result.isAllTestsPassed()) {
+                exercise.setCompleted(true);
+            }
+
+            courseDb.save();
+
+            new CheckForNewExercisesOrUpdates(true, false).run();
+        }
+
+        @Override
+        public void onFailure(Throwable ex) {
+            Logger log = Logger.getLogger(SubmitExerciseAction.class.getName());
+            log.log(Level.INFO, "Error waiting for results from server.", ex);
+            String msg = ServerErrorHelper.getServerExceptionMsg(ex);
+            dialogs.displayError("Error trying to get test results.", ex);
+            dialog.close();
+        }
+
+    }
+
 }
