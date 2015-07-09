@@ -1,7 +1,7 @@
 package fi.helsinki.cs.tmc.actions;
 
 import fi.helsinki.cs.tmc.model.CourseDb;
-import fi.helsinki.cs.tmc.model.TmcSettings;
+import fi.helsinki.cs.tmc.model.NBTmcSettings;
 import fi.helsinki.cs.tmc.tailoring.SelectedTailoring;
 import fi.helsinki.cs.tmc.tailoring.Tailoring;
 import fi.helsinki.cs.tmc.ui.PreferencesUI;
@@ -50,12 +50,12 @@ public final class ShowSettingsAction extends AbstractAction {
 
         final PreferencesUI prefUI = prefUiFactory.createCurrentPreferencesUI();
 
-        TmcSettings settings = TmcSettings.getDefault();
+        NBTmcSettings settings = NBTmcSettings.getDefault();
         prefUI.setUsername(settings.getUsername());
         prefUI.setPassword(settings.getPassword());
         prefUI.setShouldSavePassword(settings.isSavingPassword());
-        prefUI.setServerBaseUrl(settings.getServerBaseUrl());
-        prefUI.setProjectDir(settings.getProjectRootDir());
+        prefUI.setServerBaseUrl(settings.getServerAddress());
+        prefUI.setProjectDir(settings.getTmcMainDirectory());
         prefUI.setCheckForUpdatesInTheBackground(settings.isCheckingForUpdatesInTheBackground());
         prefUI.setCheckForUnopenedExercisesAtStartup(settings.isCheckingForUnopenedAtStartup());
         prefUI.setAvailableCourses(courseDb.getAvailableCourses());

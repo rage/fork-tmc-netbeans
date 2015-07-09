@@ -1,12 +1,15 @@
 package fi.helsinki.cs.tmc.model;
 
+import com.google.common.util.concurrent.FutureCallback;
+import com.google.common.util.concurrent.Futures;
+import com.google.common.util.concurrent.ListenableFuture;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.google.gson.reflect.TypeToken;
-import fi.helsinki.cs.tmc.data.Course;
-import fi.helsinki.cs.tmc.data.Exercise;
+import hy.tmc.core.domain.Course;
+import hy.tmc.core.domain.Exercise;
 import fi.helsinki.cs.tmc.data.FeedbackAnswer;
 import fi.helsinki.cs.tmc.data.Review;
 import fi.helsinki.cs.tmc.data.serialization.CourseInfoParser;
@@ -19,6 +22,8 @@ import fi.helsinki.cs.tmc.utilities.ExceptionUtils;
 import fi.helsinki.cs.tmc.utilities.UriUtils;
 import fi.helsinki.cs.tmc.utilities.http.FailedHttpResponseException;
 import fi.helsinki.cs.tmc.utilities.http.HttpTasks;
+import hy.tmc.core.TmcCore;
+import hy.tmc.core.exceptions.TmcCoreException;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
@@ -31,6 +36,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.zip.GZIPOutputStream;
 import org.openide.modules.Modules;
+import org.openide.util.Exceptions;
 
 /**
  * A frontend for the server.
@@ -38,22 +44,23 @@ import org.openide.modules.Modules;
 public class ServerAccess {
     public static final int API_VERSION = 7;
     
-    private TmcSettings settings;
+    private NBTmcSettings settings;
     private CourseListParser courseListParser;
     private CourseInfoParser courseInfoParser;
     private ReviewListParser reviewListParser;
     private String clientVersion;
+    private TmcCore tmcCore;
     
     public ServerAccess() {
-        this(TmcSettings.getDefault());
+        this(NBTmcSettings.getDefault());
     }
 
-    public ServerAccess(TmcSettings settings) {
+    public ServerAccess(NBTmcSettings settings) {
         this(settings, new CourseListParser(), new CourseInfoParser(), new ReviewListParser());
     }
 
     public ServerAccess(
-        TmcSettings settings,
+        NBTmcSettings settings,
         CourseListParser courseListParser,
         CourseInfoParser courseInfoParser,
         ReviewListParser reviewListParser
@@ -69,18 +76,18 @@ public class ServerAccess {
         return Modules.getDefault().ownerOf(ServerAccess.class).getSpecificationVersion().toString();
     }
     
-    public void setSettings(TmcSettings settings) {
+    public void setSettings(NBTmcSettings settings) {
         this.settings = settings;
     }
     
     private String getCourseListUrl() {
-        return addApiCallQueryParameters(settings.getServerBaseUrl() + "/courses.json");
+        return addApiCallQueryParameters(settings.getServerAddress() + "/courses.json");
     }
     
-    private String addApiCallQueryParameters(String url) {
+    public static String addApiCallQueryParameters(String url) {
         url = UriUtils.withQueryParam(url, "api_version", ""+API_VERSION);
         url = UriUtils.withQueryParam(url, "client", "netbeans_plugin");
-        url = UriUtils.withQueryParam(url, "client_version", clientVersion);
+        url = UriUtils.withQueryParam(url, "client_version", getClientVersion());
         return url;
     }
     
@@ -92,16 +99,17 @@ public class ServerAccess {
         return
                 !settings.getUsername().isEmpty() &&
                 !settings.getPassword().isEmpty() &&
-                !settings.getServerBaseUrl().isEmpty();
+                !settings.getServerAddress().isEmpty();
     }
 
     public boolean needsOnlyPassword() {
         return
                 !settings.getUsername().isEmpty() &&
                 settings.getPassword().isEmpty() &&
-                !settings.getServerBaseUrl().isEmpty();
+                !settings.getServerAddress().isEmpty();
     }
     
+    @Deprecated
     public CancellableCallable<List<Course>> getDownloadingCourseListTask() {
         final CancellableCallable<String> download = createHttpTasks().getForText(getCourseListUrl());
         return new CancellableCallable<List<Course>>() {
@@ -122,6 +130,7 @@ public class ServerAccess {
         };
     }
 
+    @Deprecated
     public CancellableCallable<Course> getFullCourseInfoTask(Course courseStub) {
         String url = addApiCallQueryParameters(courseStub.getDetailsUrl());
         final CancellableCallable<String> download = createHttpTasks().getForText(url);

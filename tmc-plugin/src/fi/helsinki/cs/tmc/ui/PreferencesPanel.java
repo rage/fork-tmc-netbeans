@@ -1,8 +1,9 @@
 package fi.helsinki.cs.tmc.ui;
 
+import com.google.common.util.concurrent.FutureCallback;
 import fi.helsinki.cs.tmc.actions.RefreshCoursesAction;
-import fi.helsinki.cs.tmc.data.Course;
-import fi.helsinki.cs.tmc.model.TmcSettings;
+import hy.tmc.core.domain.Course;
+import fi.helsinki.cs.tmc.model.NBTmcSettings;
 import fi.helsinki.cs.tmc.tailoring.SelectedTailoring;
 import fi.helsinki.cs.tmc.utilities.BgTaskListener;
 import fi.helsinki.cs.tmc.utilities.DelayedRunner;
@@ -272,8 +273,8 @@ import org.apache.commons.lang3.StringUtils;
         }
     }
 
-    private TmcSettings getTransientSettingsForRefresh() {
-        TmcSettings settings = TmcSettings.getTransient();
+    private NBTmcSettings getTransientSettingsForRefresh() {
+        NBTmcSettings settings = NBTmcSettings.getTransient();
         settings.setUsername(getUsername());
         settings.setPassword(getPassword());
         settings.setServerBaseUrl(getServerBaseUrl());
@@ -303,7 +304,7 @@ import org.apache.commons.lang3.StringUtils;
                 if (event.getStateChange() == ItemEvent.SELECTED) {
 
                     // Language changed, notify user about restarting
-                    if (!TmcSettings.getDefault().getErrorMsgLocale().equals(getErrorMsgLocale())) {
+                    if (!NBTmcSettings.getDefault().getErrorMsgLocale().equals(getErrorMsgLocale())) {
                         restartMessage.setText("Changing language requires restart");
                     } else {
                         restartMessage.setText("");
@@ -422,24 +423,21 @@ import org.apache.commons.lang3.StringUtils;
     private void startRefreshingCourseList(boolean failSilently, boolean delay) {
         final RefreshCoursesAction action = new RefreshCoursesAction(getTransientSettingsForRefresh());
         action.addDefaultListener(!failSilently, false);
-        action.addListener(new BgTaskListener<List<Course>>() {
-            @Override
-            public void bgTaskReady(List<Course> result) {
-                setCourseListRefreshInProgress(false);
-                setAvailableCourses(result);
-            }
+        action.addListener(new FutureCallback<List<Course>>() {
 
             @Override
-            public void bgTaskCancelled() {
+            public void onSuccess(List<Course> result) {
                 setCourseListRefreshInProgress(false);
+                setAvailableCourses(result);            
             }
-
+            
             @Override
-            public void bgTaskFailed(Throwable ex) {
+            public void onFailure(Throwable thrwbl) {
                 setCourseListRefreshInProgress(false);
             }
+            
         });
-
+        
         if (delay) {
             refreshRunner.setTask(new Runnable() {
                 @Override
@@ -703,8 +701,8 @@ import org.apache.commons.lang3.StringUtils;
     }//GEN-LAST:event_folderChooserBtnActionPerformed
 
     private void refreshCoursesBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_refreshCoursesBtnActionPerformed
-        TmcSettings settings = getTransientSettingsForRefresh();
-        if (settings.getServerBaseUrl() == null || settings.getServerBaseUrl().trim().isEmpty()) {
+        NBTmcSettings settings = getTransientSettingsForRefresh();
+        if (settings.getServerAddress() == null || settings.getServerAddress().trim().isEmpty()) {
             dialogs.displayError("Please set the server address first");
         }
         startRefreshingCourseList(false, false);

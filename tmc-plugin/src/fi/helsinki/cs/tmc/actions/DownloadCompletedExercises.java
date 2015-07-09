@@ -1,8 +1,9 @@
 package fi.helsinki.cs.tmc.actions;
 
-import fi.helsinki.cs.tmc.data.Course;
+import com.google.common.util.concurrent.FutureCallback;
+import hy.tmc.core.domain.Course;
 import fi.helsinki.cs.tmc.data.CourseListUtils;
-import fi.helsinki.cs.tmc.data.Exercise;
+import hy.tmc.core.domain.Exercise;
 import fi.helsinki.cs.tmc.model.CourseDb;
 import fi.helsinki.cs.tmc.model.LocalExerciseStatus;
 import fi.helsinki.cs.tmc.model.ServerAccess;
@@ -10,6 +11,7 @@ import fi.helsinki.cs.tmc.ui.ConvenientDialogDisplayer;
 import fi.helsinki.cs.tmc.ui.DownloadOrUpdateExercisesDialog;
 import fi.helsinki.cs.tmc.utilities.BgTask;
 import fi.helsinki.cs.tmc.utilities.BgTaskListener;
+import hy.tmc.core.exceptions.TmcCoreException;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.Collections;
@@ -17,6 +19,7 @@ import java.util.List;
 import org.openide.awt.ActionID;
 import org.openide.awt.ActionReference;
 import org.openide.awt.ActionRegistration;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle.Messages;
 
 @ActionID(category = "TMC", id = "fi.helsinki.cs.tmc.actions.DownloadCompletedExercises")
@@ -28,13 +31,13 @@ public final class DownloadCompletedExercises implements ActionListener {
     private ServerAccess serverAccess;
     private CourseDb courseDb;
     private ConvenientDialogDisplayer dialogs;
-    
+
     public DownloadCompletedExercises() {
         this.serverAccess = new ServerAccess();
         this.courseDb = CourseDb.getInstance();
         this.dialogs = ConvenientDialogDisplayer.getDefault();
     }
-    
+
     @Override
     public void actionPerformed(ActionEvent e) {
         final Course currentCourse = courseDb.getCurrentCourse();
@@ -45,9 +48,10 @@ public final class DownloadCompletedExercises implements ActionListener {
 
         RefreshCoursesAction action = new RefreshCoursesAction();
         action.addDefaultListener(true, true);
-        action.addListener(new BgTaskListener<List<Course>>() {
+        action.addListener(new FutureCallback<List<Course>>() {
+
             @Override
-            public void bgTaskReady(List<Course> receivedCourseList) {
+            public void onSuccess(List<Course> receivedCourseList) {
                 LocalExerciseStatus status = LocalExerciseStatus.get(courseDb.getCurrentCourseExercises());
                 if (!status.downloadableCompleted.isEmpty()) {
                     List<Exercise> emptyList = Collections.emptyList();
@@ -58,11 +62,7 @@ public final class DownloadCompletedExercises implements ActionListener {
             }
 
             @Override
-            public void bgTaskCancelled() {
-            }
-
-            @Override
-            public void bgTaskFailed(Throwable ex) {
+            public void onFailure(Throwable ex) {
                 dialogs.displayError("Failed to check for new exercises.\n" + ServerErrorHelper.getServerExceptionMsg(ex));
             }
         });

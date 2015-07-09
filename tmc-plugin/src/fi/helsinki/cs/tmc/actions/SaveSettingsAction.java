@@ -1,20 +1,21 @@
 package fi.helsinki.cs.tmc.actions;
 
-import fi.helsinki.cs.tmc.data.Course;
+import com.google.common.util.concurrent.FutureCallback;
+import hy.tmc.core.domain.Course;
 import fi.helsinki.cs.tmc.model.CourseDb;
 import fi.helsinki.cs.tmc.model.LocalExerciseStatus;
-import fi.helsinki.cs.tmc.model.TmcSettings;
+import fi.helsinki.cs.tmc.model.NBTmcSettings;
 import fi.helsinki.cs.tmc.ui.PreferencesUI;
 import fi.helsinki.cs.tmc.ui.DownloadOrUpdateExercisesDialog;
-import fi.helsinki.cs.tmc.utilities.BgTaskListener;
 import java.awt.event.ActionEvent;
 import java.util.List;
 import javax.swing.AbstractAction;
+import javax.swing.SwingUtilities;
 
 public class SaveSettingsAction extends AbstractAction {
 
     private CourseDb courseDb;
-    
+
     public SaveSettingsAction() {
         this.courseDb = CourseDb.getInstance();
     }
@@ -30,7 +31,7 @@ public class SaveSettingsAction extends AbstractAction {
 
         PreferencesUI prefUi = (PreferencesUI) e.getSource();
 
-        TmcSettings settings = TmcSettings.getDefault();
+        NBTmcSettings settings = NBTmcSettings.getDefault();
         settings.setUsername(prefUi.getUsername());
         settings.setPassword(prefUi.getPassword());
         settings.setSavingPassword(prefUi.getShouldSavePassword());
@@ -47,26 +48,26 @@ public class SaveSettingsAction extends AbstractAction {
 
             RefreshCoursesAction refresh = new RefreshCoursesAction();
             refresh.addDefaultListener(true, true);
-            refresh.addListener(new BgTaskListener<List<Course>>() {
+            refresh.addListener(new FutureCallback<List<Course>>() {
                 @Override
-                public void bgTaskReady(List<Course> result) {
-                    LocalExerciseStatus status = LocalExerciseStatus.get(courseDb.getCurrentCourseExercises());
-                    if (status.thereIsSomethingToDownload(false)) {
-                        DownloadOrUpdateExercisesDialog.display(status.unlockable, status.downloadableUncompleted, status.updateable);
-                    }
+                public void onSuccess(List<Course> v) {
+                    SwingUtilities.invokeLater(new Runnable() {
+                        @Override
+                        public void run() {
+                            LocalExerciseStatus status = LocalExerciseStatus.get(courseDb.getCurrentCourseExercises());
+                            if (status.thereIsSomethingToDownload(false)) {
+                                DownloadOrUpdateExercisesDialog.display(status.unlockable, status.downloadableUncompleted, status.updateable);
+                            }
+                        }
+                    });
                 }
 
                 @Override
-                public void bgTaskCancelled() {
-                }
-
-                @Override
-                public void bgTaskFailed(Throwable ex) {
+                public void onFailure(Throwable thrwbl) {
                 }
             });
             refresh.run();
         }
-        
         settings.save();
     }
 }

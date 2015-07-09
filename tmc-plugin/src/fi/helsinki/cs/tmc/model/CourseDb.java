@@ -2,12 +2,12 @@ package fi.helsinki.cs.tmc.model;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
-import fi.helsinki.cs.tmc.data.Course;
+import hy.tmc.core.domain.Course;
 import fi.helsinki.cs.tmc.data.CourseListUtils;
-import fi.helsinki.cs.tmc.data.Exercise;
-import fi.helsinki.cs.tmc.data.ExerciseKey;
+import hy.tmc.core.domain.Exercise;
 import fi.helsinki.cs.tmc.events.TmcEvent;
 import fi.helsinki.cs.tmc.events.TmcEventBus;
+import hy.tmc.core.domain.ExerciseKey;
 import java.io.IOException;
 import java.io.Reader;
 import java.io.Writer;
@@ -86,7 +86,7 @@ public class CourseDb {
             if (availableCourses.get(i).getName().equals(course.getName())) {
                 availableCourses.set(i, course);
                 save();
-                break;
+                return;
             }
         }
     }
@@ -166,7 +166,21 @@ public class CourseDb {
      * Sets the downloaded checksum of the exercise to be the one reported by the server.
      */
     public void exerciseDownloaded(Exercise ex) {
-        downloadedExerciseChecksums.put(ex.getKey(), ex.getChecksum());
+        List<Exercise> exercises = new ArrayList<Exercise>();
+        exercises.add(ex);
+        this.multipleExerciseDownloaded(exercises);
+    }
+    
+    /**
+     * Informs the course database that the exercises are considered downloaded.
+     * 
+     * <p>
+     * Sets the downloaded checksums of the exercises to be the ones reported by the server.
+     */
+    public void multipleExerciseDownloaded(List<Exercise> exercises) {
+        for (Exercise ex : exercises) {
+            downloadedExerciseChecksums.put(ex.getKey(), ex.getChecksum());
+        }
         save();
     }
     

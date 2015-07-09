@@ -2,9 +2,9 @@ package fi.helsinki.cs.tmc.data.serialization;
 
 import org.junit.Test;
 import static org.junit.Assert.*;
-import fi.helsinki.cs.tmc.data.Course;
+import hy.tmc.core.domain.Course;
 import fi.helsinki.cs.tmc.data.CourseListUtils;
-import fi.helsinki.cs.tmc.data.Exercise;
+import hy.tmc.core.domain.Exercise;
 import fi.helsinki.cs.tmc.data.ExerciseListUtils;
 import java.util.GregorianCalendar;
 import java.util.List;
@@ -44,7 +44,8 @@ public class CourseListParserTest {
         assertEquals("TheCourse", exercise.getCourseName());
         
         GregorianCalendar cal = new GregorianCalendar();
-        cal.setTime(exercise.getDeadline());
+        cal.setTime(exercise.getDeadlineDate());
+        System.out.println("AIKA: " + exercise.getDeadlineDate());
         assertEquals(2015, cal.get(GregorianCalendar.YEAR));
         assertEquals(1, cal.get(GregorianCalendar.HOUR_OF_DAY));
         assertEquals(30, cal.get(GregorianCalendar.MINUTE));

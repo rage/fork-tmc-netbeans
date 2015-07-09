@@ -1,6 +1,6 @@
 package fi.helsinki.cs.tmc.model;
 
-import fi.helsinki.cs.tmc.data.Exercise;
+import hy.tmc.core.domain.Exercise;
 import fi.helsinki.cs.tmc.utilities.ExceptionUtils;
 import java.io.File;
 import java.io.IOException;
@@ -63,7 +63,7 @@ public class ProjectMediator {
     }
     
     public String getProjectRootDir() {
-        return TmcSettings.getDefault().getProjectRootDir();
+        return NBTmcSettings.getDefault().getTmcMainDirectory();
     }
     
     public static String getDefaultProjectRootDir() {
@@ -115,8 +115,9 @@ public class ProjectMediator {
         String path = 
                 getProjectRootDir() + File.separator +
                 ex.getCourseName() + File.separator +
-                ex.getName().replaceAll("/", "-");
-        return new File(path);
+                ex.getName().replaceAll("-", "/");
+        File file = new File(path);
+        return FileUtil.normalizeFile(file);
     }
     
     /**

@@ -1,113 +1,184 @@
 package fi.helsinki.cs.tmc.actions;
 
-import fi.helsinki.cs.tmc.data.Course;
+import com.google.common.util.concurrent.FutureCallback;
+import com.google.common.util.concurrent.Futures;
+import com.google.common.util.concurrent.ListenableFuture;
+import hy.tmc.core.domain.Course;
 import fi.helsinki.cs.tmc.data.CourseListUtils;
 import fi.helsinki.cs.tmc.model.CourseDb;
 import fi.helsinki.cs.tmc.model.ServerAccess;
-import fi.helsinki.cs.tmc.model.TmcSettings;
-import fi.helsinki.cs.tmc.utilities.BgTaskListener;
+import fi.helsinki.cs.tmc.model.TmcCoreSingleton;
+import fi.helsinki.cs.tmc.model.NBTmcSettings;
 import fi.helsinki.cs.tmc.ui.ConvenientDialogDisplayer;
-import fi.helsinki.cs.tmc.utilities.BgTask;
-import fi.helsinki.cs.tmc.utilities.BgTaskListenerList;
-import fi.helsinki.cs.tmc.utilities.CancellableCallable;
+import fi.helsinki.cs.tmc.utilities.FutureCallbackList;
+import hy.tmc.core.TmcCore;
+import hy.tmc.core.exceptions.TmcCoreException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.netbeans.api.progress.ProgressHandle;
+import org.netbeans.api.progress.ProgressHandleFactory;
+import org.openide.util.Exceptions;
 
 /**
  * Refreshes the course list in the background.
  */
 public final class RefreshCoursesAction {
+
     private final static Logger log = Logger.getLogger(RefreshCoursesAction.class.getName());
 
     private ServerAccess serverAccess;
     private CourseDb courseDb;
     private ConvenientDialogDisplayer dialogs;
-    
-    private BgTaskListenerList<List<Course>> listeners;
+
+    private FutureCallbackList<List<Course>> callbacks;
+    private final TmcCore tmcCore;
+    private final NBTmcSettings tmcSettings;
 
     public RefreshCoursesAction() {
-        this(TmcSettings.getDefault());
+        this(NBTmcSettings.getDefault());
     }
-    
-    public RefreshCoursesAction(TmcSettings settings) {
+
+    /**
+     * Default constructor.
+     */
+    public RefreshCoursesAction(NBTmcSettings settings) {
+        this(settings, TmcCoreSingleton.getInstance());
+    }
+
+    /**
+     * Dependency inject TmcCore for tests.
+     */
+    public RefreshCoursesAction(NBTmcSettings settings, TmcCore core) {
+        this.tmcSettings = settings;
         this.serverAccess = new ServerAccess(settings);
         this.serverAccess.setSettings(settings);
         this.courseDb = CourseDb.getInstance();
         this.dialogs = ConvenientDialogDisplayer.getDefault();
-
-        this.listeners = new BgTaskListenerList<List<Course>>();
+        this.callbacks = new FutureCallbackList<List<Course>>();
+        this.tmcCore = core;
     }
 
     public RefreshCoursesAction addDefaultListener(boolean showDialogOnError, boolean updateCourseDb) {
-        this.listeners.addListener(new DefaultListener(showDialogOnError, updateCourseDb));
+        this.callbacks.addListener(new DefaultListener(showDialogOnError, updateCourseDb));
         return this;
     }
 
-    public RefreshCoursesAction addListener(BgTaskListener<List<Course>> listener) {
-        this.listeners.addListener(listener);
+    public RefreshCoursesAction addListener(FutureCallback<List<Course>> callback) {
+        this.callbacks.addListener(callback);
         return this;
     }
 
+    /**
+     * Starts downloading course-jsons from TMC-server. Url of TMC-server is
+     * defined in TmcSettings object. TmcCore includes all logic, callbacks here
+     * are run after core-futures are ready.
+     */
     public void run() {
-        CancellableCallable<List<Course>> courseListTask = serverAccess.getDownloadingCourseListTask();
+        try {
+            ProgressHandle courseRefresh = ProgressHandleFactory.createSystemHandle(
+                    "Refreshing course list");
+            courseRefresh.start();
+            ListenableFuture<List<Course>> listCourses = this.tmcCore.listCourses(tmcSettings);
+            Futures.addCallback(listCourses, new LoadCourses(courseRefresh));
+        } catch (TmcCoreException ex) {
+            Exceptions.printStackTrace(ex);
+            callbacks.onFailure(ex);
+        }
+    }
 
-        BgTask.start("Refreshing course list", courseListTask, new BgTaskListener<List<Course>>() {
+    class LoadCourses implements FutureCallback<List<Course>> {
 
-            @Override
-            public void bgTaskReady(final List<Course> courses) {
-                Course currentCourseStub = CourseListUtils.getCourseByName(courses, courseDb.getCurrentCourseName());
-                if (currentCourseStub != null) {
-                    CancellableCallable<Course> currentCourseTask = serverAccess.getFullCourseInfoTask(currentCourseStub);
+        private ProgressHandle lastAction;
 
-                    BgTask.start("Loading course", currentCourseTask, new BgTaskListener<Course>() {
-                        @Override
-                        public void bgTaskReady(Course currentCourse) {
-                            currentCourse.setExercisesLoaded(true);
+        /**
+         * This callBack is run when ListenableFuture (to witch this is
+         * attached) is done. On success method takes list of Course-objects,
+         * searches the current course and starts uploading the details of the
+         * course. If no currentCourse found, no need to update details.
+         *
+         * @param ProgressHandle shows to user that action is processing.
+         */
+        public LoadCourses(ProgressHandle lastAction) {
+            this.lastAction = lastAction;
+        }
 
-                            ArrayList<Course> finalCourses = new ArrayList<Course>();
-                            for (Course course : courses) {
-                                if (course.getName().equals(currentCourse.getName())) {
-                                    finalCourses.add(currentCourse);
-                                } else {
-                                    finalCourses.add(course);
-                                }
-                            }
-                            listeners.bgTaskReady(finalCourses);
-                        }
+        @Override
+        public void onSuccess(final List<Course> courses) {
+            lastAction.finish();
+            Course currentCourse = CourseListUtils.getCourseByName(
+                    courses, courseDb.getCurrentCourseName()
+            );
+            if (currentCourse != null) {
+                try {
+                    ProgressHandle loadingCourse = ProgressHandleFactory.
+                            createSystemHandle("Loading course");
+                    loadingCourse.start();
+                    ListenableFuture<Course> courseFuture = tmcCore.getCourse(
+                            tmcSettings, currentCourse.getDetailsUrl()
+                    );
+                    Futures.addCallback(courseFuture, new UpdateCourse(courses, loadingCourse));
+                } catch (TmcCoreException ex) {
+                    Exceptions.printStackTrace(ex);
+                    callbacks.onFailure(ex);
+                }
+            } else {
+                callbacks.onSuccess(courses);
+            }
+        }
 
-                        @Override
-                        public void bgTaskCancelled() {
-                            listeners.bgTaskCancelled();
-                        }
+        @Override
+        public void onFailure(Throwable ex) {
+            lastAction.finish();
+            log.log(Level.INFO, "Failed to download current course info.", ex);
+            callbacks.onFailure(ex);
+        }
+    }
 
-                        @Override
-                        public void bgTaskFailed(Throwable ex) {
-                            log.log(Level.INFO, "Failed to download current course info.", ex);
-                            listeners.bgTaskFailed(ex);
-                        }
-                    });
-                    
+    /**
+     * When detailed current course is present, courses will be given to
+     * FutureCallbackList, that shares the result to every callback that is
+     * attached to that list.
+     */
+    class UpdateCourse implements FutureCallback<Course> {
+
+        private List<Course> courses;
+        private ProgressHandle lastAction;
+
+        public UpdateCourse(List<Course> courses, ProgressHandle lastAction) {
+            this.courses = courses;
+            this.lastAction = lastAction;
+        }
+
+        @Override
+        public void onSuccess(Course detailedCourse) {
+            lastAction.finish();
+            detailedCourse.setExercisesLoaded(true);
+            ArrayList<Course> finalCourses = new ArrayList<Course>();
+            for (Course course : courses) {
+                if (course.getName().equals(detailedCourse.getName())) {
+                    finalCourses.add(detailedCourse);
                 } else {
-                    listeners.bgTaskReady(courses);
+                    finalCourses.add(course);
                 }
             }
+            callbacks.onSuccess(finalCourses);
+        }
 
-            @Override
-            public void bgTaskCancelled() {
-                listeners.bgTaskCancelled();
-            }
-
-            @Override
-            public void bgTaskFailed(Throwable ex) {
-                log.log(Level.INFO, "Failed to download course list.", ex);
-                listeners.bgTaskFailed(ex);
-            }
-        });
+        @Override
+        public void onFailure(Throwable ex) {
+            lastAction.finish();
+            log.log(Level.INFO, "Failed to download current course info.", ex);
+            callbacks.onFailure(ex);
+        }
     }
 
-    private class DefaultListener implements BgTaskListener<List<Course>> {
+    /**
+     * Updates the courseDb after all course-jsons are downloaded.
+     */
+    private class DefaultListener implements FutureCallback<List<Course>> {
+
         private final boolean showDialogOnError;
         private final boolean updateCourseDb;
 
@@ -117,18 +188,14 @@ public final class RefreshCoursesAction {
         }
 
         @Override
-        public void bgTaskReady(List<Course> result) {
+        public void onSuccess(List<Course> result) {
             if (updateCourseDb) {
                 courseDb.setAvailableCourses(result);
             }
         }
 
         @Override
-        public void bgTaskCancelled() {
-        }
-
-        @Override
-        public void bgTaskFailed(Throwable ex) {
+        public void onFailure(Throwable ex) {
             if (showDialogOnError) {
                 dialogs.displayError("Course refresh failed.\n" + ServerErrorHelper.getServerExceptionMsg(ex));
             }
