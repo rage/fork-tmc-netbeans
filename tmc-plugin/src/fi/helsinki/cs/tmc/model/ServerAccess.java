@@ -206,6 +206,8 @@ public class ServerAccess {
                     try {
                         URI submissionUrl = new URI(respJson.get("submission_url").getAsString());
                         URI pasteUrl = new URI(respJson.get("paste_url").getAsString());
+                        System.out.println("SubmissionUrl: " + submissionUrl);
+                        System.out.println("pasteUrl: " + pasteUrl);
                         return new SubmissionResponse(submissionUrl, pasteUrl);
                     } catch (Exception e) {
                         throw new RuntimeException("Server responded with malformed submission url");

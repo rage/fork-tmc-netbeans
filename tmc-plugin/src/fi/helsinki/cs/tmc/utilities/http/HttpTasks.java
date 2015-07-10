@@ -2,6 +2,7 @@ package fi.helsinki.cs.tmc.utilities.http;
 
 import fi.helsinki.cs.tmc.utilities.CancellableCallable;
 import java.io.UnsupportedEncodingException;
+import java.net.MalformedURLException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Map;
@@ -16,6 +17,7 @@ import org.apache.http.entity.mime.MultipartEntityBuilder;
 import org.apache.http.entity.mime.content.ByteArrayBody;
 import org.apache.http.message.BasicNameValuePair;
 import org.apache.http.util.EntityUtils;
+import org.openide.util.Exceptions;
 
 /**
  * Convenient methods to start asynchronous HTTP tasks.
@@ -132,6 +134,7 @@ public class HttpTasks {
     }
 
     private HttpPost makeFileUploadRequest(String url, Map<String, String> params, String fileField, byte[] data) {
+        System.out.println("Url: " + url);
         HttpPost request = new HttpPost(url);
         MultipartEntityBuilder entityBuilder = MultipartEntityBuilder.create();
         entityBuilder.setMode(HttpMultipartMode.BROWSER_COMPATIBLE);
@@ -140,6 +143,11 @@ public class HttpTasks {
         }
         entityBuilder.addPart(fileField, new ByteArrayBody(data, "file"));
         request.setEntity(entityBuilder.build());
+        try {
+            System.out.println(request.getURI().toURL().toString());
+        } catch (MalformedURLException ex) {
+            Exceptions.printStackTrace(ex);
+        }
         return request;
     }
 }
