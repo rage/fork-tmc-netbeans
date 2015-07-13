@@ -3,6 +3,7 @@ package fi.helsinki.cs.tmc.data;
 import hy.tmc.core.domain.Course;
 import java.util.List;
 
+@Deprecated
 public class CourseListUtils {
     /**
      * Returns the course with the given name or null if not found.

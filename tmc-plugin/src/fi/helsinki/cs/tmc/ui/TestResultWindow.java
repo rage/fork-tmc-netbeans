@@ -4,6 +4,7 @@ import com.google.common.base.Function;
 import hy.tmc.core.domain.Exercise;
 import fi.helsinki.cs.tmc.data.TestCaseResult;
 import fi.helsinki.cs.tmc.stylerunner.validation.ValidationResult;
+import hy.tmc.core.domain.submission.TestCase;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.event.ItemEvent;
@@ -111,7 +112,7 @@ public class TestResultWindow extends TopComponent {
     }
 
     public void showResults(final Exercise exercise,
-                            final List<TestCaseResult> testCaseResults,
+                            final List<TestCase> testCaseResults,
                             final ValidationResult validationResult,
                             final Runnable submissionCallback,
                             final boolean submittable) {
@@ -149,9 +150,9 @@ public class TestResultWindow extends TopComponent {
         }
     }
 
-    private int countSuccessfulTests(List<TestCaseResult> results) {
+    private int countSuccessfulTests(List<TestCase> results) {
         int count = 0;
-        for (TestCaseResult result : results) {
+        for (TestCase result : results) {
             if (result.isSuccessful()) {
                 count += 1;
             }

@@ -5,6 +5,7 @@ import fi.helsinki.cs.tmc.stylerunner.validation.ValidationResult;
 import fi.helsinki.cs.tmc.ui.TestResultWindow;
 import hy.tmc.core.domain.Exercise;
 import hy.tmc.core.domain.Course;
+import hy.tmc.core.domain.submission.TestCase;
 
 import java.util.List;
 
@@ -15,7 +16,7 @@ import java.util.List;
 public final class ResultCollector {
 
     private final Exercise exercise;
-    private List<TestCaseResult> testCaseResults;
+    private List<TestCase> testCaseResults;
     private ValidationResult validationResults;
 
     private boolean testCaseResultsSet = false;
@@ -36,7 +37,7 @@ public final class ResultCollector {
         showResultsIfReady();
     }
 
-    public void setTestCaseResults(final List<TestCaseResult> results) {
+    public void setTestCaseResults(final List<TestCase> results) {
 
         this.testCaseResults = results;
         this.testCaseResultsSet = true;
@@ -64,7 +65,7 @@ public final class ResultCollector {
 
     private boolean isSubmittable() {
 
-        for (TestCaseResult result : testCaseResults) {
+        for (TestCase result : testCaseResults) {
 
             if (!result.isSuccessful()) {
                 return false;

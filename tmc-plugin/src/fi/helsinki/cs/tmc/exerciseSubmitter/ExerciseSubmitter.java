@@ -30,6 +30,7 @@ import java.util.logging.Logger;
 
 import org.netbeans.api.project.Project;
 
+@Deprecated
 public class ExerciseSubmitter {
 
     private static final Logger log = Logger.getLogger(SubmitExerciseAction.class.getName());
@@ -95,7 +96,7 @@ public class ExerciseSubmitter {
 
                         final ResultCollector resultCollector = new ResultCollector(exercise);
                         resultCollector.setValidationResult(result.getValidationResult());
-                        resultDisplayer.showSubmissionResult(exercise, result, resultCollector);
+                        //resultDisplayer.showSubmissionResult(exercise, result, resultCollector);
 
                         // We change exercise state as a first approximation,
                         // then refresh from the server and potentially notify the user

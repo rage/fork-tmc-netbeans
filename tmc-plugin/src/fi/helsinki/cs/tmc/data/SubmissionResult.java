@@ -7,14 +7,17 @@ import fi.helsinki.cs.tmc.stylerunner.validation.ValidationResult;
 import java.util.Collections;
 import java.util.List;
 
+@Deprecated
 public class SubmissionResult {
 
+    @Deprecated
     public static enum Status {
         OK,
         FAIL,
         ERROR
     }
 
+    @Deprecated
     public static enum TestResultStatus {
         ALL,
         SOME,

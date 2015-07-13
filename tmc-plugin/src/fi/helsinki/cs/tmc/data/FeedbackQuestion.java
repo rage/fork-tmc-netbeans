@@ -3,6 +3,7 @@ package fi.helsinki.cs.tmc.data;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+@Deprecated
 public class FeedbackQuestion {
     private static final Pattern intRangeRegex = Pattern.compile("^intrange\\[(-?\\d+)\\.\\.(-?\\d+)\\]$");
     

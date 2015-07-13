@@ -1,5 +1,6 @@
 package fi.helsinki.cs.tmc.data;
 
+import hy.tmc.core.domain.submission.FeedbackQuestion;
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 

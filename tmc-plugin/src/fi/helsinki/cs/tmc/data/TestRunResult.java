@@ -3,6 +3,7 @@ package fi.helsinki.cs.tmc.data;
 import java.util.ArrayList;
 import java.util.List;
 
+@Deprecated
 public class TestRunResult {
     private final List<TestCaseResult> testCaseResults;
     private final boolean compilationSucceeded;

@@ -1,6 +1,5 @@
 package fi.helsinki.cs.tmc.runners;
 
-import com.google.common.base.Optional;
 import com.google.common.base.Throwables;
 import com.google.common.collect.ImmutableList;
 import com.google.common.util.concurrent.FutureCallback;
@@ -8,8 +7,6 @@ import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.ListenableFuture;
 import hy.tmc.core.domain.Exercise;
 import fi.helsinki.cs.tmc.data.ResultCollector;
-import fi.helsinki.cs.tmc.data.TestCaseResult;
-import fi.helsinki.cs.tmc.data.TestRunResult;
 import fi.helsinki.cs.tmc.events.TmcEvent;
 import fi.helsinki.cs.tmc.events.TmcEventBus;
 import fi.helsinki.cs.tmc.exerciseSubmitter.ExerciseSubmitter;
@@ -21,16 +18,12 @@ import fi.helsinki.cs.tmc.model.NBTmcSettings;
 import fi.helsinki.cs.tmc.model.ProjectMediator;
 import fi.helsinki.cs.tmc.model.TmcCoreSingleton;
 import fi.helsinki.cs.tmc.model.TmcProjectInfo;
-import static fi.helsinki.cs.tmc.model.TmcProjectType.JAVA_MAVEN;
-import static fi.helsinki.cs.tmc.model.TmcProjectType.JAVA_SIMPLE;
-import static fi.helsinki.cs.tmc.model.TmcProjectType.MAKEFILE;
+
 import fi.helsinki.cs.tmc.ui.ConvenientDialogDisplayer;
 import fi.helsinki.cs.tmc.ui.TestResultDisplayer;
-import fi.helsinki.cs.tmc.utilities.BgTask;
-import fi.helsinki.cs.tmc.utilities.BgTaskListener;
+import hy.tmc.core.domain.submission.TestCase;
 import hy.tmc.core.exceptions.TmcCoreException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import static java.util.logging.Level.INFO;
 import java.util.logging.Logger;
@@ -114,7 +107,7 @@ public class TestRunHandler {
                 }
                 Exercise ex = projectMediator.tryGetExerciseForProject(projectInfo, courseDb);
                 boolean canSubmit = ex.isReturnable();
-                List<TestCaseResult> list = testResultsToTestCaseResults(result.testResults);
+                List<TestCase> list = testResultsToTestCaseResults(result.testResults);
                 resultDisplayer.showLocalRunResult(list, canSubmit, new Runnable() {
                     @Override
                     public void run() {
@@ -125,10 +118,10 @@ public class TestRunHandler {
         });
     }
 
-    private List<TestCaseResult> testResultsToTestCaseResults(ImmutableList<TestResult> testresults) {
-        List<TestCaseResult> testCaseResults = new ArrayList<TestCaseResult>();
+    private List<TestCase> testResultsToTestCaseResults(ImmutableList<TestResult> testresults) {
+        List<TestCase> testCaseResults = new ArrayList<TestCase>();
         for (TestResult result : testresults) {
-            TestCaseResult testCase = new TestCaseResult(result.name, result.passed, result.errorMessage);
+            TestCase testCase = null;//new TestCase(result.name, result.passed, result.errorMessage);
             testCaseResults.add(testCase);
         }
         return testCaseResults;

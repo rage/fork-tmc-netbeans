@@ -3,6 +3,7 @@ package fi.helsinki.cs.tmc.ui;
 import hy.tmc.core.domain.Exercise;
 import fi.helsinki.cs.tmc.data.TestCaseResult;
 import fi.helsinki.cs.tmc.model.SourceFileLookup;
+import hy.tmc.core.domain.submission.TestCase;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -11,12 +12,12 @@ public final class TestResultBuilder {
 
     private TestResultBuilder() {}
 
-    public static List<ResultCell> buildCells(final Exercise exercise, final List<TestCaseResult> testCaseResults, final boolean showAll) {
+    public static List<ResultCell> buildCells(final Exercise exercise, final List<TestCase> testCaseResults, final boolean showAll) {
 
         final SourceFileLookup sourceFileLookup = SourceFileLookup.getDefault();
         final List<ResultCell> resultCells = new ArrayList<ResultCell>();
 
-        for (TestCaseResult result : testCaseResults) {
+        for (TestCase result : testCaseResults) {
 
             if (showAll || !result.isSuccessful()) {
 

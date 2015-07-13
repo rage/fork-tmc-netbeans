@@ -3,8 +3,6 @@ package fi.helsinki.cs.tmc.ui;
 import java.awt.Component;
 import hy.tmc.core.domain.Exercise;
 import fi.helsinki.cs.tmc.data.FeedbackAnswer;
-import fi.helsinki.cs.tmc.data.FeedbackQuestion;
-import fi.helsinki.cs.tmc.data.SubmissionResult;
 import fi.helsinki.cs.tmc.ui.feedback.FeedbackQuestionPanel;
 import fi.helsinki.cs.tmc.ui.feedback.FeedbackQuestionPanelFactory;
 import java.awt.Font;
@@ -26,6 +24,8 @@ import org.apache.commons.lang3.StringEscapeUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.openide.awt.HtmlBrowser;
 import static fi.helsinki.cs.tmc.ui.Boxer.*;
+import hy.tmc.core.domain.submission.FeedbackQuestion;
+import hy.tmc.core.domain.submission.SubmissionResult;
 
 public class SuccessfulSubmissionDialog extends JDialog {
     

@@ -5,6 +5,7 @@ import fi.helsinki.cs.tmc.testrunner.TestCase;
 import static fi.helsinki.cs.tmc.testrunner.TestCase.Status.*;
 import org.netbeans.api.annotations.common.CheckForNull;
 
+@Deprecated
 public class TestCaseResult {
 
     private String name;

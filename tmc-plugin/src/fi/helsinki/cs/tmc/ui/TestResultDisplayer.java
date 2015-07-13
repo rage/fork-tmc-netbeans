@@ -3,14 +3,15 @@ package fi.helsinki.cs.tmc.ui;
 import hy.tmc.core.domain.Exercise;
 import fi.helsinki.cs.tmc.data.FeedbackAnswer;
 import fi.helsinki.cs.tmc.data.ResultCollector;
-import fi.helsinki.cs.tmc.data.SubmissionResult;
-import fi.helsinki.cs.tmc.data.TestCaseResult;
 import fi.helsinki.cs.tmc.model.ServerAccess;
 import fi.helsinki.cs.tmc.stylerunner.validation.Strategy;
+
 import fi.helsinki.cs.tmc.utilities.BgTask;
 import fi.helsinki.cs.tmc.utilities.BgTaskListener;
 import fi.helsinki.cs.tmc.utilities.CancellableCallable;
 import fi.helsinki.cs.tmc.utilities.ExceptionUtils;
+import hy.tmc.core.domain.submission.SubmissionResult;
+import hy.tmc.core.domain.submission.TestCase;
 import java.awt.Dialog;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -97,7 +98,7 @@ public class TestResultDisplayer {
         String msg;
         boolean milderFail;
 
-        if (!result.getPoints().isEmpty()) {
+        if (result.getPoints().isEmpty()) {
             msg = "Exercise " + exercise.getName() + " failed partially.\n";
             msg += "Points permanently awarded: " + StringUtils.join(result.getPoints(), ", ") + ".\n\n";
             milderFail = true;
@@ -111,13 +112,13 @@ public class TestResultDisplayer {
         }
 
         switch (result.getTestResultStatus()) {
-            case ALL:
+            case ALL_FAILED:
                 msg += "All tests failed on the server.\nSee below.";
                 break;
-            case SOME:
+            case SOME_FAILED:
                 msg += "Some tests failed on the server.\nSee below.";
                 break;
-            case NONE:
+            case NONE_FAILED:
                 if (result.validationsFailed()) {
                     msg += "See below.";
                 }
@@ -130,11 +131,12 @@ public class TestResultDisplayer {
             dialogs.displayError(msg);
         }
     }
+      
 
     /**
      * Shows local results and calls the callback if a submission should be started.
      */
-    public void showLocalRunResult(final List<TestCaseResult> results,
+    public void showLocalRunResult(final List<TestCase> results,
                                    final boolean returnable,
                                    final Runnable submissionCallback,
                                    final ResultCollector resultCollector) {
@@ -143,7 +145,7 @@ public class TestResultDisplayer {
 
         resultCollector.setSubmissionCallback(submissionCallback);
 
-        displayTestCases(results, returnable, resultCollector);
+//        displayTestCases(results, returnable, resultCollector);
     }
 
     private void displayError(String error) {
@@ -163,7 +165,7 @@ public class TestResultDisplayer {
                 .replace("\n", "<br>");
     }
 
-    private void displayTestCases(final List<TestCaseResult> testCases, final boolean returnable, final ResultCollector resultCollector) {
+    private void displayTestCases(final List<TestCase> testCases, final boolean returnable, final ResultCollector resultCollector) {
 
         resultCollector.setReturnable(returnable);
         resultCollector.setTestCaseResults(testCases);
@@ -173,12 +175,12 @@ public class TestResultDisplayer {
         TestResultWindow.get().clear();
     }
 
-    private List<TestCaseResult> maybeAddValdrindToResults(SubmissionResult result) {
+    private List<TestCase> maybeAddValdrindToResults(SubmissionResult result) {
         String valdrindOutput = result.getValgrindOutput();
-        List<TestCaseResult> resultList = result.getTestCases();
+        List<TestCase> resultList = result.getTestCases();
 
         if (StringUtils.isNotBlank(valdrindOutput)) {
-            TestCaseResult valgrindResult = new TestCaseResult("Valgrind validations", false , "Click show valgrind trace to view valgrind trace", valdrindOutput, true);
+            TestCase valgrindResult = new TestCase("Valgrind validations", false , "Click show valgrind trace to view valgrind trace", valdrindOutput, true);
             resultList.set(0, valgrindResult);
         }
 

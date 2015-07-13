@@ -10,6 +10,7 @@ import com.google.gson.JsonSerializer;
 import java.lang.reflect.Type;
 import org.apache.commons.lang3.ObjectUtils;
 
+@Deprecated
 /**
  * A pair (course name, exercise name).
  */

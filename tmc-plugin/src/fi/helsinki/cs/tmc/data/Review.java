@@ -4,6 +4,7 @@ import com.google.gson.annotations.SerializedName;
 import java.util.ArrayList;
 import java.util.Date;
 
+@Deprecated
 public class Review {
     @SerializedName("id")
     private int id;
