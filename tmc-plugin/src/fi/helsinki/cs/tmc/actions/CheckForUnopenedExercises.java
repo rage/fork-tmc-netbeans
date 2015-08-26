@@ -1,7 +1,7 @@
 package fi.helsinki.cs.tmc.actions;
 
 import fi.helsinki.cs.tmc.core.domain.Exercise;
-import fi.helsinki.cs.tmc.model.CourseDb;
+import fi.helsinki.cs.tmc.core.domain.CourseDb;
 import fi.helsinki.cs.tmc.model.ProjectMediator;
 import fi.helsinki.cs.tmc.model.TmcProjectInfo;
 import fi.helsinki.cs.tmc.model.NbTmcSettings;

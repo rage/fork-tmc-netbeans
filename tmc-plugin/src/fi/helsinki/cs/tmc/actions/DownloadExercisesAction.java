@@ -15,7 +15,7 @@ import fi.helsinki.cs.tmc.utilities.CancellableCallable;
 
 import com.google.common.collect.Lists;
 import com.google.common.util.concurrent.ListenableFuture;
-import fi.helsinki.cs.tmc.model.CourseDb;
+import fi.helsinki.cs.tmc.core.domain.CourseDb;
 import java.util.ArrayList;
 
 import java.util.Collection;

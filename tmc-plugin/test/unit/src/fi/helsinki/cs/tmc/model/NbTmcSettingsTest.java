@@ -1,6 +1,6 @@
 package fi.helsinki.cs.tmc.model;
 
-import fi.helsinki.cs.tmc.events.TmcEventBus;
+import fi.helsinki.cs.tmc.core.events.TmcEventBus;
 import fi.helsinki.cs.tmc.tailoring.Tailoring;
 import java.util.Locale;
 import org.junit.After;

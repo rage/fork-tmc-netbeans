@@ -1,8 +1,8 @@
 package fi.helsinki.cs.tmc.model;
 
 import com.google.common.base.Optional;
-import fi.helsinki.cs.tmc.events.TmcEvent;
-import fi.helsinki.cs.tmc.events.TmcEventBus;
+import fi.helsinki.cs.tmc.core.events.TmcEvent;
+import fi.helsinki.cs.tmc.core.events.TmcEventBus;
 import fi.helsinki.cs.tmc.tailoring.SelectedTailoring;
 import fi.helsinki.cs.tmc.tailoring.Tailoring;
 import fi.helsinki.cs.tmc.core.configuration.TmcSettings;

@@ -1,6 +1,6 @@
 package fi.helsinki.cs.tmc.actions;
 
-import fi.helsinki.cs.tmc.model.CourseDb;
+import fi.helsinki.cs.tmc.core.domain.CourseDb;
 import fi.helsinki.cs.tmc.model.NbTmcSettings;
 import fi.helsinki.cs.tmc.tailoring.SelectedTailoring;
 import fi.helsinki.cs.tmc.tailoring.Tailoring;

@@ -2,7 +2,7 @@ package fi.helsinki.cs.tmc.actions;
 
 import fi.helsinki.cs.tmc.core.domain.Course;
 import fi.helsinki.cs.tmc.core.domain.Exercise;
-import fi.helsinki.cs.tmc.model.CourseDb;
+import fi.helsinki.cs.tmc.core.domain.CourseDb;
 import fi.helsinki.cs.tmc.model.LocalExerciseStatus;
 import fi.helsinki.cs.tmc.model.ServerAccess;
 import fi.helsinki.cs.tmc.ui.ConvenientDialogDisplayer;

@@ -2,7 +2,7 @@ package fi.helsinki.cs.tmc.actions;
 
 import com.google.common.util.concurrent.FutureCallback;
 import fi.helsinki.cs.tmc.core.domain.Course;
-import fi.helsinki.cs.tmc.model.CourseDb;
+import fi.helsinki.cs.tmc.core.domain.CourseDb;
 import fi.helsinki.cs.tmc.model.NbTmcSettings;
 import fi.helsinki.cs.tmc.model.PushEventListener;
 import fi.helsinki.cs.tmc.model.ServerAccess;

@@ -3,7 +3,7 @@ package fi.helsinki.cs.tmc.actions;
 import static java.util.logging.Level.INFO;
 
 import fi.helsinki.cs.tmc.core.domain.Course;
-import fi.helsinki.cs.tmc.model.CourseDb;
+import fi.helsinki.cs.tmc.core.domain.CourseDb;
 import fi.helsinki.cs.tmc.model.LocalExerciseStatus;
 import fi.helsinki.cs.tmc.model.ObsoleteClientException;
 import fi.helsinki.cs.tmc.model.TmcCoreSingleton;

@@ -2,9 +2,9 @@ package fi.helsinki.cs.tmc.spyware.eventsources;
 
 import fi.helsinki.cs.tmc.runners.TestRunHandler;
 import fi.helsinki.cs.tmc.core.domain.Exercise;
-import fi.helsinki.cs.tmc.events.TmcEventListener;
+import fi.helsinki.cs.tmc.core.events.TmcEventListener;
 import fi.helsinki.cs.tmc.exerciseSubmitter.ExerciseSubmitter;
-import fi.helsinki.cs.tmc.model.CourseDb;
+import fi.helsinki.cs.tmc.core.domain.CourseDb;
 import fi.helsinki.cs.tmc.model.ProjectMediator;
 import fi.helsinki.cs.tmc.model.TmcProjectInfo;
 import fi.helsinki.cs.tmc.spyware.EventReceiver;

@@ -1,7 +1,7 @@
 package fi.helsinki.cs.tmc.spyware;
 
-import fi.helsinki.cs.tmc.events.TmcEventBus;
-import fi.helsinki.cs.tmc.model.CourseDb;
+import fi.helsinki.cs.tmc.core.events.TmcEventBus;
+import fi.helsinki.cs.tmc.core.domain.CourseDb;
 import fi.helsinki.cs.tmc.model.ServerAccess;
 import fi.helsinki.cs.tmc.model.NbTmcSettings;
 import fi.helsinki.cs.tmc.spyware.eventsources.TextInsertEventSource;

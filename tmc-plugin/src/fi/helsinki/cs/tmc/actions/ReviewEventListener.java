@@ -1,9 +1,9 @@
 package fi.helsinki.cs.tmc.actions;
 
 import fi.helsinki.cs.tmc.core.domain.Review;
-import fi.helsinki.cs.tmc.events.TmcEventBus;
-import fi.helsinki.cs.tmc.events.TmcEventListener;
-import fi.helsinki.cs.tmc.model.CourseDb;
+import fi.helsinki.cs.tmc.core.events.TmcEventBus;
+import fi.helsinki.cs.tmc.core.events.TmcEventListener;
+import fi.helsinki.cs.tmc.core.domain.CourseDb;
 import fi.helsinki.cs.tmc.model.PushEventListener;
 import fi.helsinki.cs.tmc.model.ReviewDb;
 import fi.helsinki.cs.tmc.model.ServerAccess;

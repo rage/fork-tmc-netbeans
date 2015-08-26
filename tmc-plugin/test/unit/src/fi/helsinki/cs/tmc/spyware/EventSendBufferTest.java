@@ -1,7 +1,7 @@
 /*package fi.helsinki.cs.tmc.spyware;
 
 import fi.helsinki.cs.tmc.core.domain.Course;
-import fi.helsinki.cs.tmc.model.CourseDb;
+import fi.helsinki.cs.tmc.core.domain.CourseDb;
 import fi.helsinki.cs.tmc.model.ServerAccess;
 import fi.helsinki.cs.tmc.utilities.CancellableCallable;
 import java.io.IOException;

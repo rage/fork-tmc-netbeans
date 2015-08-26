@@ -1,7 +1,7 @@
 package fi.helsinki.cs.tmc.actions;
 
-import fi.helsinki.cs.tmc.events.TmcEvent;
-import fi.helsinki.cs.tmc.model.CourseDb;
+import fi.helsinki.cs.tmc.core.events.TmcEvent;
+import fi.helsinki.cs.tmc.core.domain.CourseDb;
 import fi.helsinki.cs.tmc.model.NbTmcSettings;
 import fi.helsinki.cs.tmc.model.ProjectMediator;
 import fi.helsinki.cs.tmc.model.TmcCoreSingleton;
