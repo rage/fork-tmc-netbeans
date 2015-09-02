@@ -3,6 +3,8 @@ package fi.helsinki.cs.tmc.ui;
 import java.awt.Dialog;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 import javax.swing.SwingUtilities;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
@@ -94,9 +96,16 @@ public class PreferencesUIFactory {
                 "TMC Settings",
                 false,
                 NotifyDescriptor.OK_CANCEL_OPTION,
-                NotifyDescriptor.PLAIN_MESSAGE,
+                null,
                 closeListener);
         dialog = DialogDisplayer.getDefault().createDialog(descriptor);
+        dialog.addWindowListener(new WindowAdapter() {
+            @Override
+            public void windowClosed(WindowEvent we) {
+                panel = null;
+                dialog = null;
+            }
+        });
         SwingUtilities.invokeLater(new Runnable() {
             @Override
             public void run() {
